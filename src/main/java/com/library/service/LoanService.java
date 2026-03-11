@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class LoanService {
     private final BookRepository bookRepository;
     private final ReaderRepository readerRepository;
 
+    @Transactional(readOnly = true)
     public List<LoanDto> findAll() {
         return loanRepository.findAll()
                 .stream()
@@ -29,6 +31,7 @@ public class LoanService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public LoanDto findById(Long id) {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Loan not found with id: " + id));
