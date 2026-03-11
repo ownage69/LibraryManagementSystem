@@ -22,7 +22,7 @@ public class BookMapper {
 
         Set<String> authorNames = book.getAuthors()
                 .stream()
-                .map(author -> author.getFullName())
+                .map(author -> author.getFirstName() + " " + author.getLastName())
                 .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
 
         Set<Long> categoryIds = book.getCategories()

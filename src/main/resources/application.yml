@@ -2,6 +2,9 @@ spring:
   application:
     name: library-service
 
+  mvc:
+    log-request-details: true
+
   datasource:
     url: jdbc:postgresql://localhost:5432/library
     username: ${DB_USERNAME:postgres}
@@ -10,13 +13,16 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
-    show-sql: true
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-        generate_statistics: true
+        highlight_sql: false
+        use_sql_comments: false
+        generate_statistics: false
 
 springdoc:
   api-docs:
@@ -27,11 +33,12 @@ springdoc:
 
 logging:
   level:
-    com.library: DEBUG
-    org.springframework.web: INFO
+    com.library: INFO
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
     org.hibernate.SQL: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
-    org.hibernate.stat: DEBUG
+    org.hibernate.orm.jdbc.bind: OFF
+    org.hibernate.stat: OFF
 
 server:
   port: 8080

@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AuthorCreateDto {
 
-    @NotBlank(message = "Author name is required")
-    private String fullName;
+    @NotBlank(message = "Author first name is required")
+    private String firstName;
+
+    @NotBlank(message = "Author last name is required")
+    private String lastName;
 }

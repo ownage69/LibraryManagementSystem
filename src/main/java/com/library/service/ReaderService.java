@@ -20,7 +20,8 @@ public class ReaderService {
                 .stream()
                 .map(reader -> new ReaderDto(
                         reader.getId(),
-                        reader.getFullName(),
+                        reader.getFirstName(),
+                        reader.getLastName(),
                         reader.getEmail()
                 ))
                 .toList();
@@ -29,24 +30,41 @@ public class ReaderService {
     public ReaderDto findById(Long id) {
         Reader reader = readerRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Reader not found with id: " + id));
-        return new ReaderDto(reader.getId(), reader.getFullName(), reader.getEmail());
+        return new ReaderDto(
+                reader.getId(),
+                reader.getFirstName(),
+                reader.getLastName(),
+                reader.getEmail()
+        );
     }
 
     public ReaderDto create(ReaderCreateDto readerCreateDto) {
         Reader reader = new Reader();
-        reader.setFullName(readerCreateDto.getFullName());
+        reader.setFirstName(readerCreateDto.getFirstName());
+        reader.setLastName(readerCreateDto.getLastName());
         reader.setEmail(readerCreateDto.getEmail());
         Reader saved = readerRepository.save(reader);
-        return new ReaderDto(saved.getId(), saved.getFullName(), saved.getEmail());
+        return new ReaderDto(
+                saved.getId(),
+                saved.getFirstName(),
+                saved.getLastName(),
+                saved.getEmail()
+        );
     }
 
     public ReaderDto update(Long id, ReaderCreateDto readerCreateDto) {
         Reader reader = readerRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Reader not found with id: " + id));
-        reader.setFullName(readerCreateDto.getFullName());
+        reader.setFirstName(readerCreateDto.getFirstName());
+        reader.setLastName(readerCreateDto.getLastName());
         reader.setEmail(readerCreateDto.getEmail());
         Reader saved = readerRepository.save(reader);
-        return new ReaderDto(saved.getId(), saved.getFullName(), saved.getEmail());
+        return new ReaderDto(
+                saved.getId(),
+                saved.getFirstName(),
+                saved.getLastName(),
+                saved.getEmail()
+        );
     }
 
     public void delete(Long id) {

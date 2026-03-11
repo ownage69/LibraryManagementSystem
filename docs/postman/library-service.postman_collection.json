@@ -1,0 +1,758 @@
+{
+  "info": {
+    "_postman_id": "e0f2c56d-c836-49f2-9741-b4f2605e4cf4",
+    "name": "Library Service API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "GET Get all books",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET N+1 demo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/n-plus-one",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "n-plus-one"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET EntityGraph fixed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/with-entity-graph",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "with-entity-graph"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Get book by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "{{bookId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Search books by author",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/search?author=Оруэлл",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "search"],
+              "query": [
+                {
+                  "key": "author",
+                  "value": "Оруэлл"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Create book",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Тестовая книга из Postman\",\n  \"isbn\": \"9781111111199\",\n  \"description\": \"Создано из Postman Collection\",\n  \"publishYear\": 2024,\n  \"publisherId\": 1,\n  \"authorIds\": [1],\n  \"categoryIds\": [1]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Update book",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Обновленная книга из Postman\",\n  \"isbn\": \"9781111111198\",\n  \"description\": \"Update через Postman Collection\",\n  \"publishYear\": 2025,\n  \"publisherId\": 2,\n  \"authorIds\": [2],\n  \"categoryIds\": [2]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "{{bookId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE Delete book",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "{{bookId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Authors",
+      "item": [
+        {
+          "name": "GET Get all authors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/authors",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "authors"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Get author by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/authors/{{authorId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "authors", "{{authorId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Create author",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Иван\",\n  \"lastName\": \"Тургенев\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/authors",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "authors"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Update author",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Антон\",\n  \"lastName\": \"Чехов\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/authors/{{authorId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "authors", "{{authorId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE Delete author",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/authors/{{authorId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "authors", "{{authorId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "GET Get all categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Get category by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", "{{categoryId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Create category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Исторический роман\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Update category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Документальная проза\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", "{{categoryId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE Delete category",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", "{{categoryId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Publishers",
+      "item": [
+        {
+          "name": "GET Get all publishers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/publishers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "publishers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Get publisher by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/publishers/{{publisherId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "publishers", "{{publisherId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Create publisher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Penguin Random House\",\n  \"country\": \"США\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/publishers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "publishers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Update publisher",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Oxford University Press\",\n  \"country\": \"Великобритания\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/publishers/{{publisherId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "publishers", "{{publisherId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE Delete publisher",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/publishers/{{publisherId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "publishers", "{{publisherId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Readers",
+      "item": [
+        {
+          "name": "GET Get all readers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/readers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "readers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Get reader by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/readers/{{readerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "readers", "{{readerId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Create reader",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Сергей\",\n  \"lastName\": \"Иванов\",\n  \"email\": \"reader.test1@mail.ru\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/readers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "readers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Update reader",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Александр\",\n  \"lastName\": \"Смирнов\",\n  \"email\": \"reader.test2@mail.ru\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/readers/{{readerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "readers", "{{readerId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE Delete reader",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/readers/{{readerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "readers", "{{readerId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Loans",
+      "item": [
+        {
+          "name": "GET Get all loans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/loans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "loans"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Get loan by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/loans/{{loanId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "loans", "{{loanId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Create loan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookId\": 1,\n  \"readerId\": 1,\n  \"dueDate\": \"2026-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/loans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "loans"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Update loan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookId\": 1,\n  \"readerId\": 2,\n  \"dueDate\": \"2027-01-15\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/loans/{{loanId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "loans", "{{loanId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE Delete loan",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/loans/{{loanId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "loans", "{{loanId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Scenarios",
+      "item": [
+        {
+          "name": "POST without transaction (missing authorId)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"publisherName\": \"Scenario Publisher NoTX\",\n  \"bookTitle\": \"Scenario Book NoTX\",\n  \"bookIsbn\": \"9781111111299\",\n  \"authorId\": 999999,\n  \"categoryId\": 1,\n  \"readerId\": 1,\n  \"dueDate\": \"2026-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/scenarios/without-transaction",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "scenarios", "without-transaction"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST with transaction (missing authorId)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"publisherName\": \"Scenario Publisher TX\",\n  \"bookTitle\": \"Scenario Book TX\",\n  \"bookIsbn\": \"9781111111399\",\n  \"authorId\": 999999,\n  \"categoryId\": 1,\n  \"readerId\": 1,\n  \"dueDate\": \"2026-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/scenarios/with-transaction",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "scenarios", "with-transaction"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST with transaction (success)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"publisherName\": \"Scenario Publisher OK\",\n  \"bookTitle\": \"Scenario Book OK\",\n  \"bookIsbn\": \"9781111111499\",\n  \"authorId\": 1,\n  \"categoryId\": 1,\n  \"readerId\": 1,\n  \"dueDate\": \"2026-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/scenarios/with-transaction",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "scenarios", "with-transaction"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "bookId",
+      "value": "1"
+    },
+    {
+      "key": "authorId",
+      "value": "1"
+    },
+    {
+      "key": "categoryId",
+      "value": "1"
+    },
+    {
+      "key": "publisherId",
+      "value": "1"
+    },
+    {
+      "key": "readerId",
+      "value": "1"
+    },
+    {
+      "key": "loanId",
+      "value": "1"
+    }
+  ]
+}

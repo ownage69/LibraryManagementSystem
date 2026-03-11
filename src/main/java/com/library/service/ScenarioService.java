@@ -15,6 +15,7 @@ import com.library.repository.PublisherRepository;
 import com.library.repository.ReaderRepository;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,41 +32,41 @@ public class ScenarioService {
     private final LoanRepository loanRepository;
 
     public String createWithoutTransaction(ScenarioCreateDto scenarioCreateDto) {
-        saveLinkedEntities(scenarioCreateDto);
-
-        if (Boolean.TRUE.equals(scenarioCreateDto.getFail())) {
-            throw new IllegalStateException("Scenario failed without transaction");
-        }
-
+        saveLinkedEntitiesByIds(scenarioCreateDto);
         return "Scenario without transaction completed";
     }
 
     @Transactional
     public String createWithTransaction(ScenarioCreateDto scenarioCreateDto) {
-        saveLinkedEntities(scenarioCreateDto);
-
-        if (Boolean.TRUE.equals(scenarioCreateDto.getFail())) {
-            throw new IllegalStateException("Scenario failed with transaction");
-        }
-
+        saveLinkedEntitiesByIds(scenarioCreateDto);
         return "Scenario with transaction completed";
     }
 
-    private void saveLinkedEntities(ScenarioCreateDto scenarioCreateDto) {
-        final Publisher publisher = findOrCreatePublisher(scenarioCreateDto.getPublisherName());
-        final Author author = findOrCreateAuthor(scenarioCreateDto.getAuthorName());
-        final Category category = findOrCreateCategory(scenarioCreateDto.getCategoryName());
-        final Reader reader = findOrCreateReader(
-                scenarioCreateDto.getReaderName(),
-                scenarioCreateDto.getReaderEmail()
-        );
+    private void saveLinkedEntitiesByIds(ScenarioCreateDto scenarioCreateDto) {
+        Publisher publisher = new Publisher();
+        publisher.setName(scenarioCreateDto.getPublisherName() + "-" + System.nanoTime());
+        publisher.setCountry("Россия");
+        Publisher savedPublisher = publisherRepository.save(publisher);
+
+        final Author author = authorRepository.findById(scenarioCreateDto.getAuthorId())
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Author not found with id: " + scenarioCreateDto.getAuthorId()
+                ));
+        final Category category = categoryRepository.findById(scenarioCreateDto.getCategoryId())
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Category not found with id: " + scenarioCreateDto.getCategoryId()
+                ));
+        final Reader reader = readerRepository.findById(scenarioCreateDto.getReaderId())
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Reader not found with id: " + scenarioCreateDto.getReaderId()
+                ));
 
         Book book = new Book();
         book.setTitle(scenarioCreateDto.getBookTitle());
         book.setIsbn(scenarioCreateDto.getBookIsbn());
         book.setDescription("Scenario generated book");
         book.setPublishYear(LocalDate.now().getYear());
-        book.setPublisher(publisher);
+        book.setPublisher(savedPublisher);
         book.setAuthors(new HashSet<>());
         book.getAuthors().add(author);
         book.setCategories(new HashSet<>());
@@ -81,43 +82,5 @@ public class ScenarioService {
         loan.setReturned(false);
 
         loanRepository.save(loan);
-    }
-
-    private Publisher findOrCreatePublisher(String publisherName) {
-        return publisherRepository.findByNameIgnoreCase(publisherName)
-                .orElseGet(() -> {
-                    Publisher publisher = new Publisher();
-                    publisher.setName(publisherName);
-                    publisher.setCountry("Россия");
-                    return publisherRepository.save(publisher);
-                });
-    }
-
-    private Author findOrCreateAuthor(String authorName) {
-        return authorRepository.findByFullNameIgnoreCase(authorName)
-                .orElseGet(() -> {
-                    Author author = new Author();
-                    author.setFullName(authorName);
-                    return authorRepository.save(author);
-                });
-    }
-
-    private Category findOrCreateCategory(String categoryName) {
-        return categoryRepository.findByNameIgnoreCase(categoryName)
-                .orElseGet(() -> {
-                    Category category = new Category();
-                    category.setName(categoryName);
-                    return categoryRepository.save(category);
-                });
-    }
-
-    private Reader findOrCreateReader(String readerName, String readerEmail) {
-        return readerRepository.findByEmailIgnoreCase(readerEmail)
-                .orElseGet(() -> {
-                    Reader reader = new Reader();
-                    reader.setFullName(readerName);
-                    reader.setEmail(readerEmail);
-                    return readerRepository.save(reader);
-                });
     }
 }

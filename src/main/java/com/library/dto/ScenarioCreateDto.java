@@ -15,27 +15,21 @@ public class ScenarioCreateDto {
     @NotBlank(message = "Publisher name is required")
     private String publisherName;
 
-    @NotBlank(message = "Author name is required")
-    private String authorName;
-
-    @NotBlank(message = "Category name is required")
-    private String categoryName;
-
     @NotBlank(message = "Book title is required")
     private String bookTitle;
 
     @NotBlank(message = "Book isbn is required")
     private String bookIsbn;
 
-    @NotBlank(message = "Reader name is required")
-    private String readerName;
+    @NotNull(message = "Author id is required")
+    private Long authorId;
 
-    @NotBlank(message = "Reader email is required")
-    private String readerEmail;
+    @NotNull(message = "Category id is required")
+    private Long categoryId;
+
+    @NotNull(message = "Reader id is required")
+    private Long readerId;
 
     @NotNull(message = "Due date is required")
     private LocalDate dueDate;
-
-    @NotNull(message = "Fail flag is required")
-    private Boolean fail;
 }

@@ -17,6 +17,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,13 +29,15 @@ public class BookService {
     private final CategoryRepository categoryRepository;
     private final BookMapper bookMapper;
 
+    @Transactional(readOnly = true)
     public List<BookDto> findAll() {
-        return bookRepository.findAll()
+        return bookRepository.findAllWithGraph()
                 .stream()
                 .map(bookMapper::toDto)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<BookDto> findAllWithNplusone() {
         return bookRepository.findAll()
                 .stream()
@@ -42,6 +45,7 @@ public class BookService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<BookDto> findAllWithEntityGraph() {
         return bookRepository.findAllWithGraph()
                 .stream()
@@ -49,12 +53,14 @@ public class BookService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public BookDto findById(Long id) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Book not found with id: " + id));
         return bookMapper.toDto(book);
     }
 
+    @Transactional(readOnly = true)
     public List<BookDto> searchBooksByAuthor(String author) {
         if (author == null || author.isBlank()) {
             return findAll();

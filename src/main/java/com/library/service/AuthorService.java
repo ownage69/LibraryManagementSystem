@@ -18,29 +18,35 @@ public class AuthorService {
     public List<AuthorDto> findAll() {
         return authorRepository.findAll()
                 .stream()
-                .map(author -> new AuthorDto(author.getId(), author.getFullName()))
+                .map(author -> new AuthorDto(
+                        author.getId(),
+                        author.getFirstName(),
+                        author.getLastName()
+                ))
                 .toList();
     }
 
     public AuthorDto findById(Long id) {
         Author author = authorRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Author not found with id: " + id));
-        return new AuthorDto(author.getId(), author.getFullName());
+        return new AuthorDto(author.getId(), author.getFirstName(), author.getLastName());
     }
 
     public AuthorDto create(AuthorCreateDto authorCreateDto) {
         Author author = new Author();
-        author.setFullName(authorCreateDto.getFullName());
+        author.setFirstName(authorCreateDto.getFirstName());
+        author.setLastName(authorCreateDto.getLastName());
         Author saved = authorRepository.save(author);
-        return new AuthorDto(saved.getId(), saved.getFullName());
+        return new AuthorDto(saved.getId(), saved.getFirstName(), saved.getLastName());
     }
 
     public AuthorDto update(Long id, AuthorCreateDto authorCreateDto) {
         Author author = authorRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Author not found with id: " + id));
-        author.setFullName(authorCreateDto.getFullName());
+        author.setFirstName(authorCreateDto.getFirstName());
+        author.setLastName(authorCreateDto.getLastName());
         Author saved = authorRepository.save(author);
-        return new AuthorDto(saved.getId(), saved.getFullName());
+        return new AuthorDto(saved.getId(), saved.getFirstName(), saved.getLastName());
     }
 
     public void delete(Long id) {

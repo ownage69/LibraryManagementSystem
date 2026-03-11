@@ -87,12 +87,13 @@ public class LoanService {
     }
 
     private LoanDto toDto(Loan loan) {
+        String readerName = loan.getReader().getFirstName() + " " + loan.getReader().getLastName();
         return new LoanDto(
                 loan.getId(),
                 loan.getBook().getId(),
                 loan.getBook().getTitle(),
                 loan.getReader().getId(),
-                loan.getReader().getFullName(),
+                readerName,
                 loan.getLoanDate(),
                 loan.getDueDate(),
                 loan.isReturned()

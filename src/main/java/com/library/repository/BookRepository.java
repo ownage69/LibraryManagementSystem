@@ -13,7 +13,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query(
             "select distinct b from Book b join b.authors a "
-                    + "where lower(a.fullName) like lower(concat('%', :author, '%'))"
+                    + "where lower(concat(concat(a.firstName, ' '), a.lastName)) "
+                    + "like lower(concat('%', :author, '%'))"
     )
     List<Book> findByAuthorName(@Param("author") String author);
 
