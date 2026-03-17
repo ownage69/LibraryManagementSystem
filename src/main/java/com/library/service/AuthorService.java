@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 public class AuthorService {
 
     private final AuthorRepository authorRepository;
+    private final BookService bookService;
 
     public List<AuthorDto> findAll() {
         return authorRepository.findAll()
@@ -37,6 +38,7 @@ public class AuthorService {
         author.setFirstName(authorCreateDto.getFirstName());
         author.setLastName(authorCreateDto.getLastName());
         Author saved = authorRepository.save(author);
+        bookService.invalidateFilterCache();
         return new AuthorDto(saved.getId(), saved.getFirstName(), saved.getLastName());
     }
 
@@ -46,6 +48,7 @@ public class AuthorService {
         author.setFirstName(authorCreateDto.getFirstName());
         author.setLastName(authorCreateDto.getLastName());
         Author saved = authorRepository.save(author);
+        bookService.invalidateFilterCache();
         return new AuthorDto(saved.getId(), saved.getFirstName(), saved.getLastName());
     }
 
@@ -54,5 +57,6 @@ public class AuthorService {
             throw new NoSuchElementException("Author not found with id: " + id);
         }
         authorRepository.deleteById(id);
+        bookService.invalidateFilterCache();
     }
 }

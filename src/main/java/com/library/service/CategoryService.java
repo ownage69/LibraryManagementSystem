@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final BookService bookService;
 
     public List<CategoryDto> findAll() {
         return categoryRepository.findAll()
@@ -32,6 +33,7 @@ public class CategoryService {
         Category category = new Category();
         category.setName(categoryCreateDto.getName());
         Category saved = categoryRepository.save(category);
+        bookService.invalidateFilterCache();
         return new CategoryDto(saved.getId(), saved.getName());
     }
 
@@ -40,6 +42,7 @@ public class CategoryService {
                 .orElseThrow(() -> new NoSuchElementException("Category not found with id: " + id));
         category.setName(categoryCreateDto.getName());
         Category saved = categoryRepository.save(category);
+        bookService.invalidateFilterCache();
         return new CategoryDto(saved.getId(), saved.getName());
     }
 
@@ -48,5 +51,6 @@ public class CategoryService {
             throw new NoSuchElementException("Category not found with id: " + id);
         }
         categoryRepository.deleteById(id);
+        bookService.invalidateFilterCache();
     }
 }

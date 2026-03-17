@@ -58,6 +58,45 @@
 - С транзакцией: `POST /api/scenarios/with-transaction`  
   при той же ошибке изменения откатываются полностью.
 
+5. Data caching:
+- `GET /api/books/filter/jpql` — сложный фильтр по вложенным сущностям через `@Query` (`JPQL`).
+- `GET /api/books/filter/native` — аналогичный фильтр через `native query`.
+- Для обоих запросов добавлена пагинация через `page` и `size`.
+- Ранее запрошенные результаты сохраняются во внутренний in-memory индекс на основе `HashMap`.
+- Ключ индекса составной и включает:
+  - тип запроса (`jpql` или `native`)
+  - `authorLastName`
+  - `categoryName`
+  - `publisherCountry`
+  - `page`
+  - `size`
+- Для ключа реализованы корректные `equals()` и `hashCode()`.
+- При повторе одинакового запроса ответ может быть возвращен из кэша (`"cached": true`).
+- При изменении книг, авторов, категорий или издательств индекс очищается, чтобы не возвращать устаревшие данные.
+
+## Лабораторная 3
+Реализованы требования по теме `Data caching`:
+- сложный `GET` с фильтрацией по вложенным сущностям через `JPQL`;
+- аналогичный запрос через `native SQL`;
+- пагинация через `Pageable`;
+- in-memory индекс на `HashMap<K, V>`;
+- инвалидация индекса при изменении данных.
+
+Основные эндпоинты:
+- `GET /api/books/filter/jpql?authorLastName=Булгаков&categoryName=Классика&publisherCountry=Россия&page=0&size=5`
+- `GET /api/books/filter/native?authorLastName=Булгаков&categoryName=Классика&publisherCountry=Россия&page=0&size=5`
+- `GET /api/books/filter/jpql?page=0&size=2`
+- `GET /api/books/filter/jpql?page=1&size=2`
+
+Поля ответа:
+- `content` — список книг на текущей странице;
+- `page` — номер страницы (начиная с `0`);
+- `size` — размер страницы;
+- `totalElements` — общее количество найденных книг;
+- `totalPages` — общее количество страниц;
+- `cached` — был ли ответ взят из in-memory индекса;
+- `queryType` — тип использованного запроса (`jpql` или `native`).
+
 ## Запуск проекта
 1. Создать БД:
 ```sql

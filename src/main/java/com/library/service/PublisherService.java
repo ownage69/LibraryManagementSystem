@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 public class PublisherService {
 
     private final PublisherRepository publisherRepository;
+    private final BookService bookService;
 
     public List<PublisherDto> findAll() {
         return publisherRepository.findAll()
@@ -39,6 +40,7 @@ public class PublisherService {
         publisher.setName(publisherCreateDto.getName());
         publisher.setCountry(publisherCreateDto.getCountry());
         Publisher saved = publisherRepository.save(publisher);
+        bookService.invalidateFilterCache();
         return new PublisherDto(saved.getId(), saved.getName(), saved.getCountry());
     }
 
@@ -50,6 +52,7 @@ public class PublisherService {
         publisher.setName(publisherCreateDto.getName());
         publisher.setCountry(publisherCreateDto.getCountry());
         Publisher saved = publisherRepository.save(publisher);
+        bookService.invalidateFilterCache();
         return new PublisherDto(saved.getId(), saved.getName(), saved.getCountry());
     }
 
@@ -58,5 +61,6 @@ public class PublisherService {
             throw new NoSuchElementException("Publisher not found with id: " + id);
         }
         publisherRepository.deleteById(id);
+        bookService.invalidateFilterCache();
     }
 }

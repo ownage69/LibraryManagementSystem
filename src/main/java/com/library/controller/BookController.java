@@ -2,6 +2,7 @@ package com.library.controller;
 
 import com.library.dto.BookCreateDto;
 import com.library.dto.BookDto;
+import com.library.dto.BookPageDto;
 import com.library.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -64,6 +65,42 @@ public class BookController {
             @RequestParam(required = false) String author
     ) {
         return ResponseEntity.ok(bookService.searchBooksByAuthor(author));
+    }
+
+    @GetMapping("/filter/jpql")
+    @Operation(summary = "Filter books using JPQL with pagination")
+    public ResponseEntity<BookPageDto> filterBooksJpql(
+            @RequestParam(required = false) String authorLastName,
+            @RequestParam(required = false) String categoryName,
+            @RequestParam(required = false) String publisherCountry,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        return ResponseEntity.ok(bookService.filterBooksJpql(
+                authorLastName,
+                categoryName,
+                publisherCountry,
+                page,
+                size
+        ));
+    }
+
+    @GetMapping("/filter/native")
+    @Operation(summary = "Filter books using native query with pagination")
+    public ResponseEntity<BookPageDto> filterBooksNative(
+            @RequestParam(required = false) String authorLastName,
+            @RequestParam(required = false) String categoryName,
+            @RequestParam(required = false) String publisherCountry,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        return ResponseEntity.ok(bookService.filterBooksNative(
+                authorLastName,
+                categoryName,
+                publisherCountry,
+                page,
+                size
+        ));
     }
 
     @PostMapping

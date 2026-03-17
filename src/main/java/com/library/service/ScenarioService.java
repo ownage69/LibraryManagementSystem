@@ -30,15 +30,18 @@ public class ScenarioService {
     private final BookRepository bookRepository;
     private final ReaderRepository readerRepository;
     private final LoanRepository loanRepository;
+    private final BookService bookService;
 
     public String createWithoutTransaction(ScenarioCreateDto scenarioCreateDto) {
         saveLinkedEntitiesByIds(scenarioCreateDto);
+        bookService.invalidateFilterCache();
         return "Scenario without transaction completed";
     }
 
     @Transactional
     public String createWithTransaction(ScenarioCreateDto scenarioCreateDto) {
         saveLinkedEntitiesByIds(scenarioCreateDto);
+        bookService.invalidateFilterCache();
         return "Scenario with transaction completed";
     }
 
