@@ -13,6 +13,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
 
+    boolean existsByIsbn(String isbn);
+
+    boolean existsByIsbnAndIdNot(String isbn, Long id);
+
     @Query(
             "select distinct b from Book b join b.authors a "
                     + "where lower(concat(concat(a.firstName, ' '), a.lastName)) "

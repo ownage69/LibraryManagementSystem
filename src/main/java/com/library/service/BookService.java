@@ -1,7 +1,7 @@
 package com.library.service;
 
-import com.library.cache.BookFilterCache;
 import com.library.cache.BookFilterCacheKey;
+import com.library.cache.BookFilterIndex;
 import com.library.dto.BookCreateDto;
 import com.library.dto.BookDto;
 import com.library.dto.BookPageDto;
@@ -13,14 +13,17 @@ import com.library.mapper.BookMapper;
 import com.library.repository.AuthorRepository;
 import com.library.repository.BookRepository;
 import com.library.repository.CategoryRepository;
+import com.library.repository.LoanRepository;
 import com.library.repository.PublisherRepository;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,16 +33,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookService {
-
-    private static final String NATIVE_QUERY_TYPE = "native";
 
     private final BookRepository bookRepository;
     private final PublisherRepository publisherRepository;
     private final AuthorRepository authorRepository;
     private final CategoryRepository categoryRepository;
+    private final LoanRepository loanRepository;
     private final BookMapper bookMapper;
-    private final BookFilterCache bookFilterCache;
+    private final BookFilterIndex bookFilterIndex;
 
     @Transactional(readOnly = true)
     public List<BookDto> findAll() {
@@ -95,7 +98,30 @@ public class BookService {
             int page,
             int size
     ) {
-        return filterBooks(authorLastName, categoryName, publisherCountry, page, size, "jpql");
+        long startedAt = System.currentTimeMillis();
+        log.debug(
+                "Выполнение метода: BookService.filterBooksJpql с аргументами: "
+                        + "[authorLastName={}, categoryName={}, "
+                        + "publisherCountry={}, page={}, size={}]",
+                authorLastName,
+                categoryName,
+                publisherCountry,
+                page,
+                size
+        );
+        BookPageDto response = filterBooks(
+                authorLastName,
+                categoryName,
+                publisherCountry,
+                page,
+                size,
+                BookFilterQueryType.JPQL
+        );
+        log.debug(
+                "Метод BookService.filterBooksJpql выполнен за {} мс",
+                System.currentTimeMillis() - startedAt
+        );
+        return response;
     }
 
     @Transactional(readOnly = true)
@@ -106,29 +132,51 @@ public class BookService {
             int page,
             int size
     ) {
-        return filterBooks(
+        long startedAt = System.currentTimeMillis();
+        log.debug(
+                "Выполнение метода: BookService.filterBooksNative с аргументами: "
+                        + "[authorLastName={}, categoryName={}, "
+                        + "publisherCountry={}, page={}, size={}]",
+                authorLastName,
+                categoryName,
+                publisherCountry,
+                page,
+                size
+        );
+        BookPageDto response = filterBooks(
                 authorLastName,
                 categoryName,
                 publisherCountry,
                 page,
                 size,
-                NATIVE_QUERY_TYPE
+                BookFilterQueryType.NATIVE
         );
+        log.debug(
+                "Метод BookService.filterBooksNative выполнен за {} мс",
+                System.currentTimeMillis() - startedAt
+        );
+        return response;
     }
 
+    @Transactional
     public BookDto create(BookCreateDto bookCreateDto) {
+        validateUniqueIsbn(bookCreateDto.getIsbn(), null);
         Book book = bookMapper.toEntity(bookCreateDto);
+        book.setIsbn(normalizeIsbn(book.getIsbn()));
         applyRelations(book, bookCreateDto);
         Book saved = bookRepository.save(book);
         invalidateFilterCache();
         return bookMapper.toDto(saved);
     }
 
+    @Transactional
     public BookDto update(Long id, BookCreateDto bookCreateDto) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Book not found with id: " + id));
 
+        validateUniqueIsbn(bookCreateDto.getIsbn(), id);
         bookMapper.updateEntityFromDto(bookCreateDto, book);
+        book.setIsbn(normalizeIsbn(book.getIsbn()));
         applyRelations(book, bookCreateDto);
 
         Book saved = bookRepository.save(book);
@@ -136,11 +184,15 @@ public class BookService {
         return bookMapper.toDto(saved);
     }
 
+    @Transactional
     public void delete(Long id) {
-        if (!bookRepository.existsById(id)) {
-            throw new NoSuchElementException("Book not found with id: " + id);
-        }
-        bookRepository.deleteById(id);
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Book not found with id: " + id));
+        final long removedLoans = loanRepository.deleteByBookId(id);
+        book.getAuthors().clear();
+        book.getCategories().clear();
+        bookRepository.delete(book);
+        log.debug("Удалено займов для книги id={}: {}", id, removedLoans);
         invalidateFilterCache();
     }
 
@@ -151,11 +203,13 @@ public class BookService {
                 ));
 
         Set<Author> authors = resolveAuthors(bookCreateDto.getAuthorIds());
-        Set<Category> categories = resolveCategories(bookCreateDto.getCategoryIds());
+        final Set<Category> categories = resolveCategories(bookCreateDto.getCategoryIds());
 
         book.setPublisher(publisher);
-        book.setAuthors(authors);
-        book.setCategories(categories);
+        book.getAuthors().clear();
+        book.getAuthors().addAll(authors);
+        book.getCategories().clear();
+        book.getCategories().addAll(categories);
     }
 
     private Set<Author> resolveAuthors(Set<Long> authorIds) {
@@ -175,7 +229,8 @@ public class BookService {
     }
 
     public void invalidateFilterCache() {
-        bookFilterCache.clear();
+        bookFilterIndex.invalidateAll();
+        log.info("cache invalidated");
     }
 
     private BookPageDto filterBooks(
@@ -184,27 +239,26 @@ public class BookService {
             String publisherCountry,
             int page,
             int size,
-            String queryType
+            BookFilterQueryType queryType
     ) {
         String normalizedAuthorLastName = normalizeFilter(authorLastName);
         String normalizedCategoryName = normalizeFilter(categoryName);
         String normalizedPublisherCountry = normalizeFilter(publisherCountry);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
         BookFilterCacheKey key = new BookFilterCacheKey(
-                queryType,
                 normalizedAuthorLastName,
                 normalizedCategoryName,
                 normalizedPublisherCountry,
-                page,
-                size
+                pageable,
+                queryType
         );
-        BookPageDto cachedResponse = bookFilterCache.get(key);
-        if (cachedResponse != null) {
-            return copyPage(cachedResponse, true);
+        Optional<BookPageDto> cachedResponse = bookFilterIndex.get(key);
+        if (cachedResponse.isPresent()) {
+            return copyPage(cachedResponse.get());
         }
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
         Page<Book> bookPage;
-        if (NATIVE_QUERY_TYPE.equals(queryType)) {
+        if (BookFilterQueryType.NATIVE == queryType) {
             bookPage = bookRepository.findByFiltersNative(
                     normalizedAuthorLastName,
                     normalizedCategoryName,
@@ -220,7 +274,7 @@ public class BookService {
             );
         }
 
-        List<Book> books = NATIVE_QUERY_TYPE.equals(queryType)
+        List<Book> books = BookFilterQueryType.NATIVE == queryType
                 ? loadBooksForNativePage(bookPage)
                 : bookPage.getContent();
         BookPageDto response = new BookPageDto(
@@ -229,10 +283,9 @@ public class BookService {
                 bookPage.getSize(),
                 bookPage.getTotalElements(),
                 bookPage.getTotalPages(),
-                false,
-                queryType
+                queryType.name().toLowerCase(Locale.ROOT)
         );
-        bookFilterCache.put(key, response);
+        bookFilterIndex.put(key, response);
         return response;
     }
 
@@ -253,14 +306,13 @@ public class BookService {
                 .toList();
     }
 
-    private BookPageDto copyPage(BookPageDto source, boolean cached) {
+    private BookPageDto copyPage(BookPageDto source) {
         return new BookPageDto(
                 source.getContent(),
                 source.getPage(),
                 source.getSize(),
                 source.getTotalElements(),
                 source.getTotalPages(),
-                cached,
                 source.getQueryType()
         );
     }
@@ -270,5 +322,24 @@ public class BookService {
             return "";
         }
         return value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizeIsbn(String isbn) {
+        if (isbn == null) {
+            return null;
+        }
+        return isbn.trim();
+    }
+
+    private void validateUniqueIsbn(String isbn, Long bookId) {
+        String normalizedIsbn = normalizeIsbn(isbn);
+        boolean duplicate = bookId == null
+                ? bookRepository.existsByIsbn(normalizedIsbn)
+                : bookRepository.existsByIsbnAndIdNot(normalizedIsbn, bookId);
+        if (duplicate) {
+            throw new IllegalArgumentException(
+                    "Book with ISBN '" + normalizedIsbn + "' already exists"
+            );
+        }
     }
 }

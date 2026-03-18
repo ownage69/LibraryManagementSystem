@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface LoanRepository extends JpaRepository<Loan, Long> {
 
     List<Loan> findByReaderId(Long readerId);
+
+    long deleteByBookId(Long bookId);
 }

@@ -1,34 +1,33 @@
 package com.library.cache;
 
+import com.library.service.BookFilterQueryType;
 import java.util.Objects;
+import org.springframework.data.domain.Pageable;
 
-public final class BookFilterCacheKey {
+public class BookFilterCacheKey {
 
-    private final String queryType;
     private final String authorLastName;
     private final String categoryName;
     private final String publisherCountry;
     private final int page;
     private final int size;
+    private final String sort;
+    private final BookFilterQueryType queryType;
 
     public BookFilterCacheKey(
-            String queryType,
             String authorLastName,
             String categoryName,
             String publisherCountry,
-            int page,
-            int size
+            Pageable pageable,
+            BookFilterQueryType queryType
     ) {
-        this.queryType = normalize(queryType);
-        this.authorLastName = normalize(authorLastName);
-        this.categoryName = normalize(categoryName);
-        this.publisherCountry = normalize(publisherCountry);
-        this.page = page;
-        this.size = size;
-    }
-
-    private String normalize(String value) {
-        return value == null ? "" : value.trim().toLowerCase();
+        this.authorLastName = authorLastName;
+        this.categoryName = categoryName;
+        this.publisherCountry = publisherCountry;
+        this.page = pageable.isPaged() ? pageable.getPageNumber() : -1;
+        this.size = pageable.isPaged() ? pageable.getPageSize() : -1;
+        this.sort = pageable.getSort().toString();
+        this.queryType = queryType;
     }
 
     @Override
@@ -36,26 +35,40 @@ public final class BookFilterCacheKey {
         if (this == object) {
             return true;
         }
-        if (!(object instanceof BookFilterCacheKey other)) {
+        if (object == null || getClass() != object.getClass()) {
             return false;
         }
-        return page == other.page
-                && size == other.size
-                && Objects.equals(queryType, other.queryType)
-                && Objects.equals(authorLastName, other.authorLastName)
-                && Objects.equals(categoryName, other.categoryName)
-                && Objects.equals(publisherCountry, other.publisherCountry);
+        BookFilterCacheKey that = (BookFilterCacheKey) object;
+        return page == that.page
+                && size == that.size
+                && Objects.equals(authorLastName, that.authorLastName)
+                && Objects.equals(categoryName, that.categoryName)
+                && Objects.equals(publisherCountry, that.publisherCountry)
+                && Objects.equals(sort, that.sort)
+                && queryType == that.queryType;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-                queryType,
                 authorLastName,
                 categoryName,
                 publisherCountry,
                 page,
-                size
+                size,
+                sort,
+                queryType
         );
+    }
+
+    @Override
+    public String toString() {
+        return "queryType=" + queryType
+                + ", authorLastName='" + authorLastName + '\''
+                + ", categoryName='" + categoryName + '\''
+                + ", publisherCountry='" + publisherCountry + '\''
+                + ", page=" + page
+                + ", size=" + size
+                + ", sort=" + sort;
     }
 }

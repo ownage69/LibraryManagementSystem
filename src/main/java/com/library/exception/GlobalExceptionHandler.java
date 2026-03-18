@@ -26,6 +26,13 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, "Data integrity violation");
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleBusinessConflict(
+            IllegalArgumentException exception
+    ) {
+        return build(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(
             MethodArgumentNotValidException exception

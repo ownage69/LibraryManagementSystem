@@ -33,9 +33,9 @@ springdoc:
 
 logging:
   level:
-    com.library: INFO
-    org.springframework.web: DEBUG
-    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    com.library: DEBUG
+    org.springframework.web: INFO
+    org.springframework.web.servlet.DispatcherServlet: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: OFF
     org.hibernate.stat: OFF

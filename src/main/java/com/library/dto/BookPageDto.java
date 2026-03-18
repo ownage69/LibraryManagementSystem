@@ -15,6 +15,5 @@ public class BookPageDto {
     private int size;
     private long totalElements;
     private int totalPages;
-    private boolean cached;
     private String queryType;
 }
