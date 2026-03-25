@@ -214,14 +214,6 @@ public class GlobalExceptionHandler {
     private ResponseEntity<ApiErrorResponse> build(
             HttpStatus status,
             String message,
-            HttpServletRequest request
-    ) {
-        return build(status, message, request, null);
-    }
-
-    private ResponseEntity<ApiErrorResponse> build(
-            HttpStatus status,
-            String message,
             HttpServletRequest request,
             Exception exception
     ) {
