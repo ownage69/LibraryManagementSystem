@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
             NoSuchElementException exception,
             HttpServletRequest request
     ) {
-        return build(HttpStatus.NOT_FOUND, exception.getMessage(), request);
+        return build(HttpStatus.NOT_FOUND, exception.getMessage(), request, exception);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -172,11 +172,7 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .errors(errors)
                 .build();
-        log.warn(
-                "Validation error on {}: {}",
-                request.getRequestURI(),
-                exception.getMessage()
-        );
+        logHandledException(HttpStatus.BAD_REQUEST, request, exception);
         return ResponseEntity.badRequest().body(body);
     }
 
@@ -230,12 +226,7 @@ public class GlobalExceptionHandler {
             Exception exception
     ) {
         if (exception != null) {
-            log.warn(
-                    "{} on {}: {}",
-                    status.getReasonPhrase(),
-                    request.getRequestURI(),
-                    exception.getMessage()
-            );
+            logHandledException(status, request, exception);
         }
         ApiErrorResponse body = ApiErrorResponse.builder()
                 .timestamp(OffsetDateTime.now())
@@ -245,5 +236,29 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
         return ResponseEntity.status(status).body(body);
+    }
+
+    private void logHandledException(
+            HttpStatus status,
+            HttpServletRequest request,
+            Exception exception
+    ) {
+        String message = "{} on {}: {}";
+        if (status.is5xxServerError()) {
+            log.error(
+                    message,
+                    status.getReasonPhrase(),
+                    request.getRequestURI(),
+                    exception.getMessage(),
+                    exception
+            );
+            return;
+        }
+        log.warn(
+                message,
+                status.getReasonPhrase(),
+                request.getRequestURI(),
+                exception.getMessage()
+        );
     }
 }
