@@ -227,16 +227,16 @@ public class BookService {
             return copyPage(cachedResponse.get());
         }
 
-        Page<Book> bookPage;
+        Page<Long> bookIdPage;
         if (BookFilterQueryType.NATIVE == queryType) {
-            bookPage = bookRepository.findByFiltersNative(
+            bookIdPage = bookRepository.findBookIdsByFiltersNative(
                     normalizedAuthorLastName,
                     normalizedCategoryName,
                     normalizedPublisherCountry,
                     pageable
             );
         } else {
-            bookPage = bookRepository.findByFiltersJpql(
+            bookIdPage = bookRepository.findBookIdsByFiltersJpql(
                     normalizedAuthorLastName,
                     normalizedCategoryName,
                     normalizedPublisherCountry,
@@ -244,23 +244,21 @@ public class BookService {
             );
         }
 
-        List<Book> books = BookFilterQueryType.NATIVE == queryType
-                ? loadBooksForNativePage(bookPage)
-                : bookPage.getContent();
+        List<Book> books = loadBooksByPageIds(bookIdPage);
         BookPageDto response = new BookPageDto(
                 books.stream().map(bookMapper::toDto).toList(),
-                bookPage.getNumber(),
-                bookPage.getSize(),
-                bookPage.getTotalElements(),
-                bookPage.getTotalPages(),
+                bookIdPage.getNumber(),
+                bookIdPage.getSize(),
+                bookIdPage.getTotalElements(),
+                bookIdPage.getTotalPages(),
                 queryType.name().toLowerCase(Locale.ROOT)
         );
         bookFilterIndex.put(key, response);
         return response;
     }
 
-    private List<Book> loadBooksForNativePage(Page<Book> bookPage) {
-        List<Long> ids = bookPage.getContent().stream().map(Book::getId).toList();
+    private List<Book> loadBooksByPageIds(Page<Long> bookIdPage) {
+        List<Long> ids = bookIdPage.getContent();
         if (ids.isEmpty()) {
             return List.of();
         }

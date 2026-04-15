@@ -1,3 +1,38 @@
+spring:
+  mvc:
+    log-request-details: false
+
+  datasource:
+    hikari:
+      minimum-idle: 20
+      maximum-pool-size: 60
+      connection-timeout: 10000
+      validation-timeout: 3000
+
+server:
+  tomcat:
+    threads:
+      max: 300
+      min-spare: 30
+    accept-count: 1000
+    max-connections: 8192
+
+logging:
+  level:
+    root: WARN
+    com.library: WARN
+    org.springframework.web: WARN
+    org.hibernate.orm.query: ERROR
+  rotation:
+    max-file-size: 100MB
+    max-history: 3
+    total-size-cap: 1GB
+
 library:
   scenario:
     async-delay-millis: 0
+    async:
+      core-pool-size: 32
+      max-pool-size: 128
+      queue-capacity: 5000
+      await-termination-seconds: 30

@@ -176,7 +176,7 @@ class BookServiceTest {
         assertThat(result).isNotSameAs(cachedPage);
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getTitle()).isEqualTo("Cached Book");
-        verify(bookRepository, never()).findByFiltersJpql(
+        verify(bookRepository, never()).findBookIdsByFiltersJpql(
                 anyString(),
                 anyString(),
                 anyString(),
@@ -187,14 +187,15 @@ class BookServiceTest {
     @Test
     void filterBooksJpqlShouldLoadFromRepositoryAndStoreCache() {
         Book book = createFullBook(7L, "Animal Farm");
-        Page<Book> bookPage = new PageImpl<>(List.of(book), PageRequest.of(0, 5), 1);
+        Page<Long> bookIdPage = new PageImpl<>(List.of(7L), PageRequest.of(0, 5), 1);
         when(bookFilterIndex.get(any(BookFilterCacheKey.class))).thenReturn(Optional.empty());
-        when(bookRepository.findByFiltersJpql(
+        when(bookRepository.findBookIdsByFiltersJpql(
                 eq("orwell"),
                 eq("classic"),
                 eq("uk"),
                 any(Pageable.class)
-        )).thenReturn(bookPage);
+        )).thenReturn(bookIdPage);
+        when(bookRepository.findAllByIdInWithGraph(List.of(7L))).thenReturn(List.of(book));
 
         BookPageDto result = bookService.filterBooksJpql(" Orwell ", " Classic ", " UK ", 0, 5);
 
@@ -206,7 +207,7 @@ class BookServiceTest {
     @Test
     void filterBooksJpqlShouldTreatBlankFiltersAsEmptyStrings() {
         when(bookFilterIndex.get(any(BookFilterCacheKey.class))).thenReturn(Optional.empty());
-        when(bookRepository.findByFiltersJpql(eq(""), eq(""), eq(""), any(Pageable.class)))
+        when(bookRepository.findBookIdsByFiltersJpql(eq(""), eq(""), eq(""), any(Pageable.class)))
                 .thenReturn(Page.empty(PageRequest.of(0, 5)));
 
         BookPageDto result = bookService.filterBooksJpql("   ", "   ", "   ", 0, 5);
@@ -217,13 +218,13 @@ class BookServiceTest {
 
     @Test
     void filterBooksNativeShouldLoadBooksWithGraphAndPreserveOrder() {
-        Page<Book> nativePage = new PageImpl<>(
-                List.of(createIdOnlyBook(20L), createIdOnlyBook(10L)),
+        Page<Long> nativePage = new PageImpl<>(
+                List.of(20L, 10L),
                 PageRequest.of(0, 5),
                 2
         );
         when(bookFilterIndex.get(any(BookFilterCacheKey.class))).thenReturn(Optional.empty());
-        when(bookRepository.findByFiltersNative(eq(""), eq(""), eq(""), any(Pageable.class)))
+        when(bookRepository.findBookIdsByFiltersNative(eq(""), eq(""), eq(""), any(Pageable.class)))
                 .thenReturn(nativePage);
         when(bookRepository.findAllByIdInWithGraph(List.of(20L, 10L))).thenReturn(List.of(
                 createFullBook(10L, "Book 10"),
@@ -241,7 +242,7 @@ class BookServiceTest {
     @Test
     void filterBooksNativeShouldReturnEmptyContentWhenPageHasNoIds() {
         when(bookFilterIndex.get(any(BookFilterCacheKey.class))).thenReturn(Optional.empty());
-        when(bookRepository.findByFiltersNative(eq(""), eq(""), eq(""), any(Pageable.class)))
+        when(bookRepository.findBookIdsByFiltersNative(eq(""), eq(""), eq(""), any(Pageable.class)))
                 .thenReturn(Page.empty(PageRequest.of(0, 5)));
 
         BookPageDto result = bookService.filterBooksNative(null, null, null, 0, 5);
@@ -485,12 +486,6 @@ class BookServiceTest {
         book.setPublisher(publisher);
         book.setAuthors(new LinkedHashSet<>(Set.of(author)));
         book.setCategories(new LinkedHashSet<>(Set.of(category)));
-        return book;
-    }
-
-    private Book createIdOnlyBook(Long id) {
-        Book book = new Book();
-        book.setId(id);
         return book;
     }
 

@@ -17,6 +17,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     boolean existsByIsbnAndIdNot(String isbn, Long id);
 
+    @EntityGraph(attributePaths = {"publisher", "authors", "categories"})
     @Query(
             "select distinct b from Book b join b.authors a "
                     + "where lower(concat(concat(a.firstName, ' '), a.lastName)) "
@@ -28,9 +29,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("select distinct b from Book b")
     List<Book> findAllWithGraph();
 
-    @EntityGraph(attributePaths = {"publisher", "authors", "categories"})
     @Query(
-            value = "select distinct b from Book b "
+            value = "select distinct b.id from Book b "
                     + "join b.publisher p "
                     + "join b.authors a "
                     + "join b.categories c "
@@ -51,7 +51,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                     + "and (:publisherCountry = '' "
                     + "or lower(p.country) like concat('%', :publisherCountry, '%'))"
     )
-    Page<Book> findByFiltersJpql(
+    Page<Long> findBookIdsByFiltersJpql(
             @Param("authorLastName") String authorLastName,
             @Param("categoryName") String categoryName,
             @Param("publisherCountry") String publisherCountry,
@@ -59,7 +59,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     );
 
     @Query(
-            value = "select distinct b.* "
+            value = "select distinct b.id "
                     + "from books b "
                     + "join publishers p on p.id = b.publisher_id "
                     + "join book_authors ba on ba.book_id = b.id "
@@ -87,7 +87,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                     + "or lower(p.country) like concat('%', :publisherCountry, '%'))",
             nativeQuery = true
     )
-    Page<Book> findByFiltersNative(
+    Page<Long> findBookIdsByFiltersNative(
             @Param("authorLastName") String authorLastName,
             @Param("categoryName") String categoryName,
             @Param("publisherCountry") String publisherCountry,
