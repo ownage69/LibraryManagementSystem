@@ -134,9 +134,8 @@ public class RaceConditionDemoService {
         private int value;
 
         private void increment() {
-            int currentValue = value;
             Thread.yield();
-            value = currentValue + 1;
+            value++;
         }
 
         private int getValue() {
