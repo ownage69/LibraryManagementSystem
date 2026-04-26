@@ -95,7 +95,7 @@ class LoanServiceTest {
 
         when(bookRepository.findAllById(List.of(1L))).thenReturn(List.of(book));
         when(readerRepository.findAllById(List.of(2L))).thenReturn(List.of(reader));
-        when(loanRepository.findFirstByBookIdAndReturnedFalse(1L)).thenReturn(Optional.empty());
+        when(loanRepository.countByBookIdAndReturnedFalse(1L)).thenReturn(0L);
         when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> {
             Loan savedLoan = invocation.getArgument(0);
             savedLoan.setId(100L);
@@ -122,16 +122,16 @@ class LoanServiceTest {
     void createShouldThrowWhenBookAlreadyHasActiveLoan() {
         LoanCreateDto loanCreateDto = new LoanCreateDto(1L, 2L, LocalDate.now().plusDays(7));
         Book book = createBook(1L, "Dune");
+        book.setTotalCopies(1);
         Reader reader = createReader(2L, "Pavel", "Morozov");
-        Loan activeLoan = createLoan(50L, book, reader);
 
         when(bookRepository.findAllById(List.of(1L))).thenReturn(List.of(book));
         when(readerRepository.findAllById(List.of(2L))).thenReturn(List.of(reader));
-        when(loanRepository.findFirstByBookIdAndReturnedFalse(1L)).thenReturn(Optional.of(activeLoan));
+        when(loanRepository.countByBookIdAndReturnedFalse(1L)).thenReturn(1L);
 
         assertThatThrownBy(() -> loanService.create(loanCreateDto))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Book is already loaned and not returned. Book id: 1");
+                .hasMessage("No available copy remaining for book id: 1");
 
         verify(loanRepository, never()).save(any(Loan.class));
     }
@@ -146,7 +146,7 @@ class LoanServiceTest {
 
         when(bookRepository.findAllById(List.of(1L, 99L))).thenReturn(List.of(firstBook));
         when(readerRepository.findAllById(List.of(2L))).thenReturn(List.of(reader));
-        when(loanRepository.findFirstByBookIdAndReturnedFalse(1L)).thenReturn(Optional.empty());
+        when(loanRepository.countByBookIdAndReturnedFalse(1L)).thenReturn(0L);
         when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> {
             Loan savedLoan = invocation.getArgument(0);
             savedLoan.setId(200L);
@@ -172,8 +172,8 @@ class LoanServiceTest {
         when(bookRepository.findAllById(List.of(1L, 3L))).thenReturn(List.of(firstBook, secondBook));
         when(readerRepository.findAllById(List.of(2L, 4L)))
                 .thenReturn(List.of(firstReader, secondReader));
-        when(loanRepository.findFirstByBookIdAndReturnedFalse(1L)).thenReturn(Optional.empty());
-        when(loanRepository.findFirstByBookIdAndReturnedFalse(3L)).thenReturn(Optional.empty());
+        when(loanRepository.countByBookIdAndReturnedFalse(1L)).thenReturn(0L);
+        when(loanRepository.countByBookIdAndReturnedFalse(3L)).thenReturn(0L);
         when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> {
             Loan savedLoan = invocation.getArgument(0);
             savedLoan.setId(savedLoan.getBook().getId() + 100L);
@@ -198,8 +198,8 @@ class LoanServiceTest {
         when(bookRepository.findAllById(List.of(1L, 3L))).thenReturn(List.of(firstBook, secondBook));
         when(readerRepository.findAllById(List.of(2L, 4L)))
                 .thenReturn(List.of(firstReader, secondReader));
-        when(loanRepository.findFirstByBookIdAndReturnedFalse(1L)).thenReturn(Optional.empty());
-        when(loanRepository.findFirstByBookIdAndReturnedFalse(3L)).thenReturn(Optional.empty());
+        when(loanRepository.countByBookIdAndReturnedFalse(1L)).thenReturn(0L);
+        when(loanRepository.countByBookIdAndReturnedFalse(3L)).thenReturn(0L);
         when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> {
             Loan savedLoan = invocation.getArgument(0);
             if (savedLoan.getBook().getId().equals(1L)) {
@@ -237,14 +237,14 @@ class LoanServiceTest {
                 createBook(1L, "The Pragmatic Programmer"),
                 createReader(2L, "Elena", "Romanova")
         );
+        existingLoan.getBook().setTotalCopies(1);
         LoanCreateDto updateDto = new LoanCreateDto(1L, 3L, LocalDate.now().plusDays(21));
         Reader newReader = createReader(3L, "Kirill", "Fedorov");
 
         when(loanRepository.findById(5L)).thenReturn(Optional.of(existingLoan));
         when(bookRepository.findById(1L)).thenReturn(Optional.of(existingLoan.getBook()));
         when(readerRepository.findById(3L)).thenReturn(Optional.of(newReader));
-        when(loanRepository.findFirstByBookIdAndReturnedFalse(1L))
-                .thenReturn(Optional.of(existingLoan));
+        when(loanRepository.countByBookIdAndReturnedFalse(1L)).thenReturn(1L);
         when(loanRepository.save(existingLoan)).thenReturn(existingLoan);
 
         LoanDto result = loanService.update(5L, updateDto);
@@ -300,19 +300,18 @@ class LoanServiceTest {
     @Test
     void updateShouldThrowWhenAnotherActiveLoanExistsForBook() {
         Book book = createBook(1L, "The Pragmatic Programmer");
+        book.setTotalCopies(1);
         Loan existingLoan = createLoan(5L, book, createReader(2L, "Elena", "Romanova"));
-        Loan anotherActiveLoan = createLoan(6L, book, createReader(3L, "Oleg", "Ivanov"));
         LoanCreateDto updateDto = new LoanCreateDto(1L, 4L, LocalDate.now().plusDays(21));
 
         when(loanRepository.findById(5L)).thenReturn(Optional.of(existingLoan));
         when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
         when(readerRepository.findById(4L)).thenReturn(Optional.of(createReader(4L, "Kirill", "Fedorov")));
-        when(loanRepository.findFirstByBookIdAndReturnedFalse(1L))
-                .thenReturn(Optional.of(anotherActiveLoan));
+        when(loanRepository.countByBookIdAndReturnedFalse(1L)).thenReturn(2L);
 
         assertThatThrownBy(() -> loanService.update(5L, updateDto))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Book is already loaned and not returned. Book id: 1");
+                .hasMessage("No available copy remaining for book id: 1");
     }
 
     @Test
