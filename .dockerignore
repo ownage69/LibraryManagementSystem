@@ -8,9 +8,9 @@ logs
 *.log
 docs
 jmeter
-booksimages
 frontend/node_modules
 frontend/dist
+frontend/public/book-covers
 **/.env
 **/.env.local
 **/.env.production

@@ -4,8 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "sync-book-covers": "node scripts/sync-book-covers.mjs",
+    "dev": "npm run sync-book-covers && vite",
+    "build": "npm run sync-book-covers && tsc --noEmit && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
