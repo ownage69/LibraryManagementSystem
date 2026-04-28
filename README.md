@@ -196,6 +196,25 @@ docker compose up --build
 - `CORS_ALLOWED_ORIGINS`
 - `VITE_API_BASE_URL`
 
+## Перенос существующих данных на Render
+Render PostgreSQL создаётся пустым. Чтобы сайт показывал уже существующие локальные
+данные, перенесите их в Render DB:
+
+```bash
+export LOCAL_DATABASE_URL='postgresql://postgres:190817@localhost:5432/library'
+export RENDER_DATABASE_URL='postgresql://user:password@host:5432/library?sslmode=require'
+bash scripts/migrate-local-postgres-to-render.sh
+```
+
+`RENDER_DATABASE_URL` нужно взять в Render Dashboard у базы данных:
+`Info -> External Database URL`.
+
+Если нужно сначала очистить Render DB и заменить данные локальными:
+
+```bash
+MIGRATION_MODE=replace bash scripts/migrate-local-postgres-to-render.sh
+```
+
 ## Swagger UI
 `http://localhost:8080/swagger-ui.html`
 

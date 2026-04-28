@@ -8,7 +8,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/library}}
     username: ${SPRING_DATASOURCE_USERNAME:${DB_USERNAME:postgres}}
-    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:postgres}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:190817}}
     driver-class-name: org.postgresql.Driver
     hikari:
       minimum-idle: ${DB_POOL_MIN_IDLE:5}
