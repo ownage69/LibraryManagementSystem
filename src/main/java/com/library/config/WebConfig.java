@@ -30,8 +30,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .maxAge(3600);
 
-        if (isWildcard(allowedOrigins)) {
-            registration.allowedOriginPatterns("*");
+        if (hasOriginPattern(allowedOrigins)) {
+            registration.allowedOriginPatterns(allowedOrigins);
         } else {
             registration.allowedOrigins(allowedOrigins);
         }
@@ -49,5 +49,10 @@ public class WebConfig implements WebMvcConfigurer {
     private boolean isWildcard(String[] allowedOrigins) {
         return allowedOrigins.length == 0
                 || Arrays.stream(allowedOrigins).anyMatch("*"::equals);
+    }
+
+    private boolean hasOriginPattern(String[] allowedOrigins) {
+        return allowedOrigins.length == 0
+                || Arrays.stream(allowedOrigins).anyMatch(origin -> origin.contains("*"));
     }
 }

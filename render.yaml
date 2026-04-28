@@ -16,7 +16,7 @@ services:
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
         value: update
       - key: CORS_ALLOWED_ORIGINS
-        value: https://library-system-frontend.onrender.com
+        value: https://library-system-frontend*.onrender.com
       - key: CORS_ALLOW_CREDENTIALS
         value: "false"
       - key: JAVA_OPTS
