@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowLeftRight, BookOpen, CalendarDays, UserRound } from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, BookOpen, CalendarDays, PencilLine, UserRound } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -72,8 +72,13 @@ export function LoanDetailsPage() {
               <ArrowLeft size={16} />
               Back
             </Link>
-            <Link to={`/loans/${loan.id}/edit`} className="button button--ghost">
-              Edit loan
+            <Link
+              to={`/loans/${loan.id}/edit`}
+              className="button button--ghost button--icon-only"
+              aria-label={`Edit loan ${loan.id}`}
+              title="Edit"
+            >
+              <PencilLine size={16} />
             </Link>
             {!loan.returned && runtimeConfig.features.loanReturnEnabled ? (
               <button

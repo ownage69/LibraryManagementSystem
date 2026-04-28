@@ -159,7 +159,7 @@ mvn clean verify
 - отправка анализа в `SonarCloud`.
 
 Файл workflow:
-- `.github/workflows/maven.yml`
+- `.github/workflows/ci-cd.yml`
 
 Для работы анализа в `SonarCloud` нужно добавить GitHub Secret:
 - `SONAR_TOKEN`
@@ -174,6 +174,27 @@ CREATE DATABASE library;
 ```bash
 mvn spring-boot:run
 ```
+
+## Docker
+В проект добавлены Docker-конфигурации для локального запуска backend, frontend и PostgreSQL.
+
+1. Создать локальный env-файл при необходимости:
+```bash
+cp .env.example .env
+```
+2. Запустить весь стек:
+```bash
+docker compose up --build
+```
+3. Проверить сервисы:
+- backend: `http://localhost:8080/actuator/health/readiness`
+- frontend: `http://localhost:3000`
+
+Основные переменные окружения:
+- `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`
+- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
+- `CORS_ALLOWED_ORIGINS`
+- `VITE_API_BASE_URL`
 
 ## Swagger UI
 `http://localhost:8080/swagger-ui.html`
@@ -195,3 +216,16 @@ npm run dev
 
 ## SonarCloud
 `https://sonarcloud.io/project/overview?id=ownage69_JavaProject`
+
+## CI/CD и Render
+Workflow `.github/workflows/ci-cd.yml` выполняет backend build/test, frontend build,
+Docker build, deploy на Render через deploy hooks и healthcheck после deploy.
+
+Для деплоя в GitHub Secrets нужно добавить:
+- `RENDER_BACKEND_DEPLOY_HOOK_URL` или старое имя `RENDER_DEPLOY_HOOK_URL`
+- `RENDER_FRONTEND_DEPLOY_HOOK_URL` или старое имя `FRONTEND_RENDER_DEPLOY_HOOK_URL`
+- `BACKEND_APP_BASE_URL` или старое имя `APP_BASE_URL`
+- `FRONTEND_APP_BASE_URL`
+
+Render Blueprint находится в `render.yaml`: backend разворачивается как Docker Web
+Service, frontend как Static Site, база данных как Render Postgres.

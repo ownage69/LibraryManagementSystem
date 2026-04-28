@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Building2, MapPinned } from 'lucide-react';
+import { ArrowLeft, BookOpen, Building2, MapPinned, PencilLine } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -45,8 +45,13 @@ export function PublisherDetailsPage() {
               Back
             </Link>
             {canManageLibrary ? (
-              <Link to={`/publishers/${data.publisher.id}/edit`} className="button button--primary">
-                Edit publisher
+              <Link
+                to={`/publishers/${data.publisher.id}/edit`}
+                className="button button--primary button--icon-only"
+                aria-label={`Edit ${data.publisher.name}`}
+                title="Edit"
+              >
+                <PencilLine size={16} />
               </Link>
             ) : null}
           </div>

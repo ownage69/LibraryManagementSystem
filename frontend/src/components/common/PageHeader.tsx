@@ -5,7 +5,7 @@ import type { BreadcrumbItem } from '../../types/api';
 interface PageHeaderProps {
   eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
   breadcrumbs?: BreadcrumbItem[];
   actions?: ReactNode;
 }
@@ -32,7 +32,7 @@ export function PageHeader({
 
         {eyebrow ? <p className="page-header__eyebrow">{eyebrow}</p> : null}
         <h2>{title}</h2>
-        <p>{description}</p>
+        {description ? <p>{description}</p> : null}
       </div>
 
       {actions ? <div className="page-header__actions">{actions}</div> : null}

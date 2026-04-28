@@ -137,17 +137,22 @@ export function PublishersPage() {
                     </Link>
                     {canManageLibrary ? (
                       <>
-                        <Link to={`/publishers/${publisher.id}/edit`} className="button button--ghost">
-                          <PencilLine size={14} />
-                          Edit
+                        <Link
+                          to={`/publishers/${publisher.id}/edit`}
+                          className="button button--ghost button--icon-only"
+                          aria-label={`Edit ${publisher.name}`}
+                          title="Edit"
+                        >
+                          <PencilLine size={16} />
                         </Link>
                         <button
                           type="button"
-                          className="button button--ghost-danger"
+                          className="button button--ghost-danger button--icon-only"
                           onClick={() => setPublisherToDelete(publisher)}
+                          aria-label={`Delete ${publisher.name}`}
+                          title="Delete"
                         >
-                          <Trash2 size={14} />
-                          Delete
+                          <Trash2 size={16} />
                         </button>
                       </>
                     ) : null}

@@ -6,20 +6,20 @@ spring:
     log-request-details: false
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/library
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:190817}
+    url: ${SPRING_DATASOURCE_URL:${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/library}}
+    username: ${SPRING_DATASOURCE_USERNAME:${DB_USERNAME:postgres}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:postgres}}
     driver-class-name: org.postgresql.Driver
     hikari:
-      minimum-idle: 10
-      maximum-pool-size: 30
-      connection-timeout: 10000
-      validation-timeout: 3000
+      minimum-idle: ${DB_POOL_MIN_IDLE:5}
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT:10000}
+      validation-timeout: ${DB_VALIDATION_TIMEOUT:3000}
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: false
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
     open-in-view: false
     properties:
       hibernate:
@@ -38,14 +38,14 @@ springdoc:
 
 logging:
   file:
-    path: logs
+    path: ${LOGGING_FILE_PATH:logs}
   rotation:
     max-file-size: 100MB
     max-history: 14
     total-size-cap: 1GB
 
 server:
-  port: 8080
+  port: ${PORT:8080}
   tomcat:
     threads:
       max: 200
@@ -57,11 +57,29 @@ server:
     min-response-size: 1024
     mime-types: application/json,text/plain,text/html,text/xml,text/css,application/javascript
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db
+
 library:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+    allow-credentials: ${CORS_ALLOW_CREDENTIALS:false}
   scenario:
-    async-delay-millis: 10000
+    async-delay-millis: ${LIBRARY_SCENARIO_ASYNC_DELAY_MILLIS:10000}
     async:
-      core-pool-size: 16
-      max-pool-size: 64
-      queue-capacity: 2000
-      await-termination-seconds: 30
+      core-pool-size: ${LIBRARY_SCENARIO_CORE_POOL_SIZE:16}
+      max-pool-size: ${LIBRARY_SCENARIO_MAX_POOL_SIZE:64}
+      queue-capacity: ${LIBRARY_SCENARIO_QUEUE_CAPACITY:2000}
+      await-termination-seconds: ${LIBRARY_SCENARIO_AWAIT_TERMINATION_SECONDS:30}

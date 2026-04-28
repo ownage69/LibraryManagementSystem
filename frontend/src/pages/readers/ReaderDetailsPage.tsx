@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Mail, UserRound } from 'lucide-react';
+import { ArrowLeft, BookOpen, Mail, PencilLine, UserRound } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -58,8 +58,13 @@ export function ReaderDetailsPage() {
               <ArrowLeft size={16} />
               Back
             </Link>
-            <Link to={`/readers/${data.reader.id}/edit`} className="button button--primary">
-              Edit reader
+            <Link
+              to={`/readers/${data.reader.id}/edit`}
+              className="button button--primary button--icon-only"
+              aria-label={`Edit ${getReaderFullName(data.reader)}`}
+              title="Edit"
+            >
+              <PencilLine size={16} />
             </Link>
           </div>
         }

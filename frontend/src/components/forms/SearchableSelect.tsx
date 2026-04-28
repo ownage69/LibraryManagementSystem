@@ -56,7 +56,7 @@ export function SearchableSelect({
         )}
       </div>
 
-      <div className="search-picker__list" role="listbox">
+      <div className="search-picker__list" role="radiogroup">
         {filteredOptions.length ? (
           filteredOptions.map((option) => {
             const selected = option.value === value;
@@ -66,12 +66,14 @@ export function SearchableSelect({
                 key={option.value}
                 type="button"
                 className={`search-picker__option ${selected ? 'search-picker__option--active' : ''}`}
+                role="radio"
+                aria-checked={selected}
                 onClick={() => {
                   onChange(option.value);
                   setQuery('');
                 }}
               >
-                <span className="search-picker__check">{selected ? '✓' : ''}</span>
+                <span className="search-picker__radio" aria-hidden="true" />
                 <span className="search-picker__option-copy">
                   <strong>{option.label}</strong>
                   {option.hint ? <small>{option.hint}</small> : null}

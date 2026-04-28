@@ -1,0 +1,228 @@
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend Build & Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: library
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d library"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/library
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Run backend verify
+        run: mvn -B clean verify
+
+      - name: SonarCloud Scan
+        if: ${{ env.SONAR_TOKEN != '' }}
+        run: >
+          mvn -B
+          sonar:sonar
+          -Dsonar.token=${SONAR_TOKEN}
+
+  frontend:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs:
+      - backend
+      - frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: library-service:${{ github.sha }}
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false
+          tags: library-frontend:${{ github.sha }}
+
+  deploy_backend:
+    name: Deploy Backend to Render
+    runs-on: ubuntu-latest
+    needs:
+      - docker
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    steps:
+      - name: Trigger backend deploy
+        env:
+          RENDER_BACKEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          DEPLOY_HOOK_URL="${RENDER_BACKEND_DEPLOY_HOOK_URL:-${RENDER_DEPLOY_HOOK_URL:-}}"
+
+          if [ -z "${DEPLOY_HOOK_URL}" ]; then
+            echo "Render backend deploy hook is not set. Skipping backend deploy."
+            exit 0
+          fi
+
+          curl -fsS -X POST "${DEPLOY_HOOK_URL}"
+
+  deploy_frontend:
+    name: Deploy Frontend to Render
+    runs-on: ubuntu-latest
+    needs:
+      - docker
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    steps:
+      - name: Trigger frontend deploy
+        env:
+          RENDER_FRONTEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
+          FRONTEND_RENDER_DEPLOY_HOOK_URL: ${{ secrets.FRONTEND_RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          DEPLOY_HOOK_URL="${RENDER_FRONTEND_DEPLOY_HOOK_URL:-${FRONTEND_RENDER_DEPLOY_HOOK_URL:-}}"
+
+          if [ -z "${DEPLOY_HOOK_URL}" ]; then
+            echo "Render frontend deploy hook is not set. Skipping frontend deploy."
+            exit 0
+          fi
+
+          curl -fsS -X POST "${DEPLOY_HOOK_URL}"
+
+  healthcheck_backend:
+    name: Backend Healthcheck
+    runs-on: ubuntu-latest
+    needs:
+      - deploy_backend
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    steps:
+      - name: Wait for backend to become healthy
+        env:
+          BACKEND_APP_BASE_URL: ${{ secrets.BACKEND_APP_BASE_URL }}
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+          RENDER_BACKEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK_URL }}
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          BACKEND_URL="${BACKEND_APP_BASE_URL:-${APP_BASE_URL:-}}"
+          DEPLOY_HOOK_URL="${RENDER_BACKEND_DEPLOY_HOOK_URL:-${RENDER_DEPLOY_HOOK_URL:-}}"
+
+          if [ -z "${BACKEND_URL}" ] || [ -z "${DEPLOY_HOOK_URL}" ]; then
+            echo "Backend URL or deploy hook is not set. Skipping backend healthcheck."
+            exit 0
+          fi
+
+          BACKEND_URL="$(printf '%s' "${BACKEND_URL}" | tr -d '[:space:]' | sed 's/^"//; s/"$//')"
+
+          for attempt in $(seq 1 20); do
+            if curl -fsS "${BACKEND_URL}/actuator/health/readiness" > /tmp/health.json; then
+              cat /tmp/health.json
+              exit 0
+            fi
+            echo "Backend healthcheck attempt ${attempt}/20 failed, waiting..."
+            sleep 15
+          done
+
+          echo "Backend did not become healthy in time."
+          exit 1
+
+  healthcheck_frontend:
+    name: Frontend Healthcheck
+    runs-on: ubuntu-latest
+    needs:
+      - deploy_frontend
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    steps:
+      - name: Wait for frontend to become healthy
+        env:
+          FRONTEND_APP_BASE_URL: ${{ secrets.FRONTEND_APP_BASE_URL }}
+          RENDER_FRONTEND_DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK_URL }}
+          FRONTEND_RENDER_DEPLOY_HOOK_URL: ${{ secrets.FRONTEND_RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          DEPLOY_HOOK_URL="${RENDER_FRONTEND_DEPLOY_HOOK_URL:-${FRONTEND_RENDER_DEPLOY_HOOK_URL:-}}"
+
+          if [ -z "${FRONTEND_APP_BASE_URL}" ] || [ -z "${DEPLOY_HOOK_URL}" ]; then
+            echo "Frontend URL or deploy hook is not set. Skipping frontend healthcheck."
+            exit 0
+          fi
+
+          FRONTEND_URL="$(printf '%s' "${FRONTEND_APP_BASE_URL}" | tr -d '[:space:]' | sed 's/^"//; s/"$//')"
+
+          for attempt in $(seq 1 20); do
+            if curl -fsS "${FRONTEND_URL}" > /tmp/frontend.html; then
+              head -n 5 /tmp/frontend.html
+              exit 0
+            fi
+            echo "Frontend healthcheck attempt ${attempt}/20 failed, waiting..."
+            sleep 15
+          done
+
+          echo "Frontend did not become healthy in time."
+          exit 1

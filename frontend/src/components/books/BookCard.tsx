@@ -1,3 +1,4 @@
+import { PencilLine, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { StatusBadge } from '../common/StatusBadge';
 import { useStoredBookCover } from '../../hooks/useStoredBookCover';
@@ -73,15 +74,22 @@ export function BookCard({
           </Link>
           {canManage ? (
             <>
-              <Link to={editPath} className="button button--ghost">
-                Edit
+              <Link
+                to={editPath}
+                className="button button--ghost button--icon-only"
+                aria-label={`Edit ${book.title}`}
+                title="Edit"
+              >
+                <PencilLine size={16} />
               </Link>
               <button
                 type="button"
-                className="button button--ghost-danger"
+                className="button button--ghost-danger button--icon-only"
                 onClick={() => onDelete?.(book)}
+                aria-label={`Delete ${book.title}`}
+                title="Delete"
               >
-                Delete
+                <Trash2 size={16} />
               </button>
             </>
           ) : null}

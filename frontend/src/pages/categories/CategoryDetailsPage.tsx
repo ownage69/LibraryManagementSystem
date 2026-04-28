@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Bookmark } from 'lucide-react';
+import { ArrowLeft, BookOpen, Bookmark, PencilLine } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -27,6 +27,7 @@ export function CategoryDetailsPage() {
   }
 
   const relatedBooks = getBooksForCategory(data.books, data.category.id);
+  const authorCount = new Set(relatedBooks.flatMap((book) => book.authorNames)).size;
 
   return (
     <div className="page-layout">
@@ -37,7 +38,6 @@ export function CategoryDetailsPage() {
         ]}
         eyebrow="Category details"
         title={data.category.name}
-        description="Review the books grouped in this category and keep the taxonomy understandable."
         actions={
           <div className="button-row">
             <Link to="/categories" className="button button--ghost">
@@ -45,42 +45,66 @@ export function CategoryDetailsPage() {
               Back
             </Link>
             {canManageLibrary ? (
-              <Link to={`/categories/${data.category.id}/edit`} className="button button--primary">
-                Edit category
+              <Link
+                to={`/categories/${data.category.id}/edit`}
+                className="button button--primary button--icon-only"
+                aria-label={`Edit ${data.category.name}`}
+                title="Edit"
+              >
+                <PencilLine size={16} />
               </Link>
             ) : null}
           </div>
         }
       />
 
-      <div className="split-layout">
-        <SurfaceCard className="profile-card">
-          <div className="entity-card__icon">
-            <Bookmark size={18} />
+      <div className="category-detail-layout">
+        <SurfaceCard className="category-profile-card">
+          <div className="category-profile-card__mast">
+            <div className="category-profile-card__icon">
+              <Bookmark size={22} />
+            </div>
+            <div>
+              <p className="section-eyebrow">Shelf subject</p>
+              <h3>{data.category.name}</h3>
+            </div>
           </div>
-          <h3>{data.category.name}</h3>
-          <p>{relatedBooks.length} catalog items currently live in this category.</p>
+
+          <div className="category-profile-card__stats">
+            <div className="category-stat">
+              <strong>{relatedBooks.length}</strong>
+              <span>titles</span>
+            </div>
+            <div className="category-stat">
+              <strong>{authorCount}</strong>
+              <span>authors</span>
+            </div>
+          </div>
         </SurfaceCard>
 
         <SurfaceCard
+          className="category-books-card"
           header={
-            <div>
-              <p className="section-eyebrow">Related books</p>
-              <h3 className="section-title">Titles grouped under this category</h3>
+            <div className="category-books-card__header">
+              <div>
+                <p className="section-eyebrow">Related books</p>
+                <h3 className="section-title">Titles grouped under this category</h3>
+              </div>
+              <span className="status-badge status-badge--neutral">{relatedBooks.length} total</span>
             </div>
           }
         >
           {relatedBooks.length ? (
-            <div className="simple-list">
+            <div className="category-book-list">
               {relatedBooks.map((book) => (
-                <Link key={book.id} to={`/books/${book.id}`} className="simple-list__item">
-                  <div className="simple-list__icon">
+                <Link key={book.id} to={`/books/${book.id}`} className="category-book-item">
+                  <span className="category-book-item__icon">
                     <BookOpen size={16} />
-                  </div>
-                  <div>
+                  </span>
+                  <span className="category-book-item__copy">
                     <strong>{book.title}</strong>
-                    <p>{book.authorNames.join(', ')}</p>
-                  </div>
+                    <span>{book.authorNames.join(', ')}</span>
+                  </span>
                 </Link>
               ))}
             </div>

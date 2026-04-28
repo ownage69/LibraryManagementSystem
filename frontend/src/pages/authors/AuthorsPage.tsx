@@ -136,17 +136,22 @@ export function AuthorsPage() {
                     </Link>
                     {canManageLibrary ? (
                       <>
-                        <Link to={`/authors/${author.id}/edit`} className="button button--ghost">
-                          <PencilLine size={14} />
-                          Edit
+                        <Link
+                          to={`/authors/${author.id}/edit`}
+                          className="button button--ghost button--icon-only"
+                          aria-label={`Edit ${getAuthorFullName(author)}`}
+                          title="Edit"
+                        >
+                          <PencilLine size={16} />
                         </Link>
                         <button
                           type="button"
-                          className="button button--ghost-danger"
+                          className="button button--ghost-danger button--icon-only"
                           onClick={() => setAuthorToDelete(author)}
+                          aria-label={`Delete ${getAuthorFullName(author)}`}
+                          title="Delete"
                         >
-                          <Trash2 size={14} />
-                          Delete
+                          <Trash2 size={16} />
                         </button>
                       </>
                     ) : null}

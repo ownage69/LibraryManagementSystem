@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, UserRound } from 'lucide-react';
+import { ArrowLeft, BookOpen, PencilLine, UserRound } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -46,8 +46,13 @@ export function AuthorDetailsPage() {
               Back
             </Link>
             {canManageLibrary ? (
-              <Link to={`/authors/${data.author.id}/edit`} className="button button--primary">
-                Edit author
+              <Link
+                to={`/authors/${data.author.id}/edit`}
+                className="button button--primary button--icon-only"
+                aria-label={`Edit ${getAuthorFullName(data.author)}`}
+                title="Edit"
+              >
+                <PencilLine size={16} />
               </Link>
             ) : null}
           </div>

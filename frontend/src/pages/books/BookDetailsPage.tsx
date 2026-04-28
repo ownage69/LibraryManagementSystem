@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, CalendarDays, Library, Users } from 'lucide-react';
+import { ArrowLeft, BookOpen, CalendarDays, Library, PencilLine, Users } from 'lucide-react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { BookCover } from '../../components/books/BookCover';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -80,8 +80,13 @@ export function BookDetailsPage({ variant = 'app' }: BookDetailsPageProps) {
               Back
             </Link>
             {canManageLibrary && variant !== 'public' ? (
-              <Link to={editPath} className="button button--primary">
-                Edit book
+              <Link
+                to={editPath}
+                className="button button--primary button--icon-only"
+                aria-label={`Edit ${data.book.title}`}
+                title="Edit"
+              >
+                <PencilLine size={16} />
               </Link>
             ) : null}
           </div>

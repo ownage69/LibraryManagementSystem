@@ -61,7 +61,7 @@ export function SearchableMultiSelect({
         </div>
       )}
 
-      <div className="search-picker__list search-picker__list--grid">
+      <div className="search-picker__list search-picker__list--grid" role="listbox" aria-multiselectable="true">
         {filteredOptions.length ? (
           filteredOptions.map((option) => {
             const selected = values.includes(option.value);
@@ -71,9 +71,11 @@ export function SearchableMultiSelect({
                 key={option.value}
                 type="button"
                 className={`search-picker__option ${selected ? 'search-picker__option--active' : ''}`}
+                role="option"
+                aria-selected={selected}
                 onClick={() => onToggle(option.value)}
               >
-                <span className="search-picker__check">{selected ? '✓' : ''}</span>
+                <span className="search-picker__checkbox" aria-hidden="true" />
                 <span className="search-picker__option-copy">
                   <strong>{option.label}</strong>
                   {option.hint ? <small>{option.hint}</small> : null}

@@ -133,17 +133,22 @@ export function ReadersPage() {
                     <Link to={`/readers/${reader.id}`} className="button button--secondary">
                       Details
                     </Link>
-                    <Link to={`/readers/${reader.id}/edit`} className="button button--ghost">
-                      <PencilLine size={14} />
-                      Edit
+                    <Link
+                      to={`/readers/${reader.id}/edit`}
+                      className="button button--ghost button--icon-only"
+                      aria-label={`Edit ${getReaderFullName(reader)}`}
+                      title="Edit"
+                    >
+                      <PencilLine size={16} />
                     </Link>
                     <button
                       type="button"
-                      className="button button--ghost-danger"
+                      className="button button--ghost-danger button--icon-only"
                       onClick={() => setReaderToDelete(reader)}
+                      aria-label={`Delete ${getReaderFullName(reader)}`}
+                      title="Delete"
                     >
-                      <Trash2 size={14} />
-                      Delete
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </SurfaceCard>
