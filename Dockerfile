@@ -13,9 +13,12 @@ FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-RUN addgroup -S app && adduser -S app -G app
+RUN addgroup -S app \
+    && adduser -S app -G app \
+    && mkdir -p /app/logs \
+    && chown -R app:app /app/logs
 
-COPY --from=build /workspace/target/library-service-*.jar app.jar
+COPY --from=build --chown=app:app /workspace/target/library-service-*.jar app.jar
 
 USER app
 EXPOSE 8080
