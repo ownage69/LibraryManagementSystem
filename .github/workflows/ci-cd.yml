@@ -22,22 +22,22 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_DB: library
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ${{ secrets.CI_POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.CI_POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres -d library"
+          --health-cmd="pg_isready -h localhost"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/library
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: ${{ secrets.CI_SPRING_DATASOURCE_URL }}
+      SPRING_DATASOURCE_USERNAME: ${{ secrets.CI_POSTGRES_USER }}
+      SPRING_DATASOURCE_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
     steps:
@@ -105,7 +105,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
-          tags: library-service:${{ github.sha }}
+          tags: ${{ secrets.CI_BACKEND_IMAGE_NAME }}:${{ github.sha }}
 
       - name: Build frontend image
         uses: docker/build-push-action@v6
@@ -113,7 +113,7 @@ jobs:
           context: .
           file: ./frontend/Dockerfile
           push: false
-          tags: library-frontend:${{ github.sha }}
+          tags: ${{ secrets.CI_FRONTEND_IMAGE_NAME }}:${{ github.sha }}
 
   deploy_backend:
     name: Deploy Backend to Render
